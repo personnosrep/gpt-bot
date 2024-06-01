@@ -1,5 +1,4 @@
-import requests
-import json
+from gpt4all import GPT4All
 import os
 import discord
 from discord import app_commands
@@ -8,8 +7,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Set the token.
+# get stuff.
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+API_KEY = os.getenv("API_KEY")
+model = GPT4All("nous-hermes-llama2-13b.Q4_0.gguf")
 
 # Define whatever this is.
 intents = discord.Intents.default()
@@ -18,49 +19,22 @@ intents.message_content = True
 bot = commands.Bot(command_prefix=".",intents=intents)
 
 
-@bot.tree.command(name="define",description="Get a definition from the urban dictionary")
-async def slash_command(interaction:discord.Interaction, word: str):
+@bot.tree.command(name="prompt",description="Get a response idk")
+async def slash_command(interaction:discord.Interaction, prompt: str):
 
+            await interaction.response.defer()
+            model = GPT4All("nous-hermes-llama2-13b.Q4_0.gguf")
 
-    response = requests.get(f"http://api.urbandictionary.com/v0/define?term={word}")
-    data = response.text
-
-    if word == 'arya' or word == 'Arya':
-        await interaction.response.send_message('Short goblin')
-
-#C:/Users/Amin/Desktop/coding stuffs/python/urban bot
+            output = model.generate(str(prompt))
+            print(output)
+            await interaction.followup.send(output)
         
-    else:
-        if response.status_code == 200:
-
-            try:
-
-
-                parse_data = json.loads(data)
-
-                firstdef = parse_data["list"][1]
-
-                author = (firstdef["author"].replace('[', '')).replace(']', '')
-
-                definition = (firstdef["definition"].replace('[', '')).replace(']', '')
-
-                word = (firstdef["word"].replace('[', '')).replace(']', '')
-
-
-                await interaction.response.send_message(f'\nauthor: {author}\nword: {word}\ndefinition: {definition}\n')
-
-            
-            except:
-                await interaction.response.send_message('word does not exist')
-
-            
-
-
-
-        else:
-            await interaction.response.send_message(f'Error. Code {response.status_code}')
     
 
+@bot.tree.command(name="help",description="HELP ME")
+async def slash_command(interaction:discord.Interaction):
+
+    await interaction.response.send_message('**Reasons for dead bot(that ive discovered so far)**:\n- Gemini gets mad when u say no-no words\n- too long of a message\n- Asking how to make methamphetamine')
 
 
 
@@ -80,8 +54,3 @@ async def on_ready():
 
 
 bot.run(DISCORD_TOKEN)
-
-
-    
-
-
